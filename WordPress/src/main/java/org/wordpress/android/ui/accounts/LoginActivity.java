@@ -11,6 +11,7 @@ import org.wordpress.android.R;
 import org.wordpress.android.WordPress;
 import org.wordpress.android.ui.accounts.login.LogInOrSignUpFragment;
 import org.wordpress.android.ui.accounts.login.LoginEmailFragment;
+import org.wordpress.android.ui.accounts.login.LoginMagicLinkRequestFragment;
 import org.wordpress.android.ui.accounts.login.LoginNavFragment;
 import org.wordpress.android.ui.accounts.login.nav.LoginNavHandler;
 import org.wordpress.android.ui.accounts.login.nav.LoginStateGetter;
@@ -106,5 +107,11 @@ public class LoginActivity extends AppCompatActivity implements LoginNavHandler,
     public void showEmailLoginScreen() {
         LoginEmailFragment loginEmailFragment = new LoginEmailFragment();
         slideInFragment(loginEmailFragment, LoginEmailFragment.TAG);
+    }
+
+    @Override
+    public void showMagicLinkRequestScreen(String email) {
+        LoginMagicLinkRequestFragment loginMagicLinkRequestFragment = LoginMagicLinkRequestFragment.newInstance(email);
+        slideInFragment(loginMagicLinkRequestFragment, LoginMagicLinkRequestFragment.TAG);
     }
 }

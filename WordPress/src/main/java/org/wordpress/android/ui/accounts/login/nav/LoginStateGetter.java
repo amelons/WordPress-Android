@@ -7,5 +7,6 @@ public interface LoginStateGetter {
 
     LoginNav.Prologue getLoginNavPrologue();
     LoginNav.InputEmail getLoginNavInputEmail();
+    LoginNav.RequestMagicLink getLoginNavRequestMagicLink();
     LoginNav.InputSiteAddress getLoginNavInputSiteAddress();
 }

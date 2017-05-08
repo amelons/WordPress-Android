@@ -13,6 +13,13 @@ public interface LoginNav {
         void help();
     }
 
+    interface RequestMagicLink extends LoginNav {
+        void sendMagicLinkRequest(String email);
+        void usePasswordInstead(String email);
+
+        void help();
+    }
+
     interface InputSiteAddress extends LoginNav {
         void gotSiteAddress(String siteAddress);
     }

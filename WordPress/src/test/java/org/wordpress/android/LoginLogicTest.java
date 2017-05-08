@@ -31,6 +31,10 @@ public class LoginLogicTest {
         @Override
         public void showEmailLoginScreen() {
         }
+
+        @Override
+        public void showMagicLinkRequestScreen(String email) {
+        }
     };
 
     @Rule
@@ -172,9 +176,10 @@ public class LoginLogicTest {
 
         loginNavController.getLoginNavInputEmail().gotEmail("a@b.com");
 
-        // email input is not implemented yet so, we should still be in the InputEmail state
+        loginNavController.ensureState(LoginNav.RequestMagicLink.class);
+
+        loginNavController.goBack();
         loginNavController.ensureState(LoginNav.InputEmail.class);
-        Assert.assertEquals("Input email is not implemented yet. Input email: a@b.com", mLastToastMessage);
 
         loginNavController.goBack();
         Assert.assertTrue(loginNavController.isNavStackEmpty());
