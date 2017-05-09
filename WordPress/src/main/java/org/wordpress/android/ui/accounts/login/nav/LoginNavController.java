@@ -29,6 +29,10 @@ public class LoginNavController implements LoginStateGetter {
             return new RequestMagicLinkHandler();
         }
 
+        if (loginNav.isAssignableFrom(LoginNav.SentMagicLink.class)) {
+            return new SentMagicLinkHandler();
+        }
+
         if (loginNav.isAssignableFrom(LoginNav.InputSiteAddress.class)) {
             return new InputSiteAddressHandler();
         }
@@ -117,11 +121,11 @@ public class LoginNavController implements LoginStateGetter {
 
     private class RequestMagicLinkHandler implements LoginNav.RequestMagicLink {
         @Override
-        public void sendMagicLinkRequest(String email) {
+        public void magicLinkRequestSent(String email) {
             ensureState(LoginNav.RequestMagicLink.class);
-            gotoState(LoginNav.RequestMagicLink.class);
+            gotoState(LoginNav.SentMagicLink.class);
 
-            mLoginNavHandler.toast("Request magic link is not implemented yet. Email: " + email);
+            mLoginNavHandler.showMagicLinkSentScreen(email);
         }
 
         @Override
@@ -136,6 +140,32 @@ public class LoginNavController implements LoginStateGetter {
         public void help() {
             ensureState(LoginNav.RequestMagicLink.class);
             gotoState(LoginNav.RequestMagicLink.class);
+
+            mLoginNavHandler.toast("Help is not implemented yet.");
+        }
+    }
+
+    private class SentMagicLinkHandler implements LoginNav.SentMagicLink {
+        @Override
+        public void openEmailClient() {
+            ensureState(LoginNav.SentMagicLink.class);
+            gotoState(LoginNav.SentMagicLink.class);
+
+            mLoginNavHandler.toast("Open email client is not implemented yet.");
+        }
+
+        @Override
+        public void usePasswordInstead(String email) {
+            ensureState(LoginNav.SentMagicLink.class);
+            gotoState(LoginNav.SentMagicLink.class);
+
+            mLoginNavHandler.toast("Fall back to password is not implemented yet. Email: " + email);
+        }
+
+        @Override
+        public void help() {
+            ensureState(LoginNav.SentMagicLink.class);
+            gotoState(LoginNav.SentMagicLink.class);
 
             mLoginNavHandler.toast("Help is not implemented yet.");
         }
@@ -175,6 +205,15 @@ public class LoginNavController implements LoginStateGetter {
             return (LoginNav.RequestMagicLink) newNavHandler(mLoginNavStack.peek());
         } catch (ClassCastException cce) {
             throw new RuntimeException("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName());
+        }
+    }
+
+    @Override
+    public LoginNav.SentMagicLink getLoginNavSentMagicLink() {
+        try {
+            return (LoginNav.SentMagicLink) newNavHandler(mLoginNavStack.peek());
+        } catch (ClassCastException cce) {
+            throw new RuntimeException("Not in state " + LoginNav.SentMagicLink.class.getSimpleName());
         }
     }
 

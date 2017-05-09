@@ -5,4 +5,5 @@ public interface LoginNavHandler {
 
     void showEmailLoginScreen();
     void showMagicLinkRequestScreen(String email);
+    void showMagicLinkSentScreen(String email);
 }

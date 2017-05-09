@@ -14,7 +14,14 @@ public interface LoginNav {
     }
 
     interface RequestMagicLink extends LoginNav {
-        void sendMagicLinkRequest(String email);
+        void magicLinkRequestSent(String email);
+        void usePasswordInstead(String email);
+
+        void help();
+    }
+
+    interface SentMagicLink extends LoginNav {
+        void openEmailClient();
         void usePasswordInstead(String email);
 
         void help();

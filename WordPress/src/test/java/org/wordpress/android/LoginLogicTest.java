@@ -35,6 +35,10 @@ public class LoginLogicTest {
         @Override
         public void showMagicLinkRequestScreen(String email) {
         }
+
+        @Override
+        public void showMagicLinkSentScreen(String email) {
+        }
     };
 
     @Rule
@@ -72,6 +76,16 @@ public class LoginLogicTest {
         exception.expect(RuntimeException.class);
         exception.expectMessage("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName());
         loginNavController.ensureState(LoginNav.RequestMagicLink.class);
+    }
+
+    @Test
+    public void initialStateNotSentMagicLink() {
+        LoginNavController loginNavController = new LoginNavController(LoginNav.Prologue.class)
+                .setLoginNavHandler(mLoginNavHandler);
+
+        exception.expect(RuntimeException.class);
+        exception.expectMessage("Not in state " + LoginNav.SentMagicLink.class.getSimpleName());
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
     }
 
     @Test
@@ -164,9 +178,9 @@ public class LoginLogicTest {
             Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
         }
 
-        // `sendMagicLinkRequest` event is not allowed while in this state
+        // `magicLinkRequestSent` event is not allowed while in this state
         try {
-            loginNavRequestMagicLink.sendMagicLinkRequest("a@b.com");
+            loginNavRequestMagicLink.magicLinkRequestSent("a@b.com");
         } catch (RuntimeException re) {
             Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
         }
@@ -298,9 +312,9 @@ public class LoginLogicTest {
             Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
         }
 
-        // `sendMagicLinkRequest` event is not allowed while in this state
+        // `magicLinkRequestSent` event is not allowed while in this state
         try {
-            loginNavRequestMagicLink.sendMagicLinkRequest("a@b.com");
+            loginNavRequestMagicLink.magicLinkRequestSent("a@b.com");
         } catch (RuntimeException re) {
             Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
         }
@@ -338,13 +352,12 @@ public class LoginLogicTest {
                 .setLoginNavHandler(mLoginNavHandler);
         loginNavController.ensureState(LoginNav.RequestMagicLink.class);
 
-        loginNavController.getLoginNavRequestMagicLink().sendMagicLinkRequest("a@b.com");
+        loginNavController.getLoginNavRequestMagicLink().magicLinkRequestSent("a@b.com");
 
-        // sendMagicLinkRequest is not implemented yet so, we should still be in the RequestMagicLink state
-        loginNavController.ensureState(LoginNav.RequestMagicLink.class);
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
 
         loginNavController.goBack();
-        Assert.assertTrue(loginNavController.isNavStackEmpty());
+        loginNavController.ensureState(LoginNav.RequestMagicLink.class);
     }
 
     @Test
@@ -460,6 +473,158 @@ public class LoginLogicTest {
 
     /////////////////////////////////////////////////
     ///
+    /// SentMagicLink nav tests
+    ///
+    /////////////////////////////////////////////////
+
+    @Test
+    public void sentMagicLinkOpenEmailClientTest() {
+        LoginNavController loginNavController = new LoginNavController(LoginNav.SentMagicLink.class)
+                .setLoginNavHandler(mLoginNavHandler);
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+
+        loginNavController.getLoginNavSentMagicLink().openEmailClient();
+
+        // openEmailClient is not implemented yet so, we should still be in the SentMagicLink state
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+
+        loginNavController.goBack();
+        Assert.assertTrue(loginNavController.isNavStackEmpty());
+    }
+
+    @Test
+    public void sentMagicLinkFallbackPasswordTest() {
+        LoginNavController loginNavController = new LoginNavController(LoginNav.SentMagicLink.class)
+                .setLoginNavHandler(mLoginNavHandler);
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+
+        loginNavController.getLoginNavSentMagicLink().usePasswordInstead("a@b.com");
+
+        // fall back to password login is not implemented yet so, we should still be in the SentMagicLink state
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+        Assert.assertEquals("Fall back to password is not implemented yet. Email: a@b.com", mLastToastMessage);
+
+        loginNavController.goBack();
+        Assert.assertTrue(loginNavController.isNavStackEmpty());
+    }
+
+    @Test
+    public void sentMagicLinkHelpTest() {
+        LoginNavController loginNavController = new LoginNavController(LoginNav.SentMagicLink.class)
+                .setLoginNavHandler(mLoginNavHandler);
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+
+        loginNavController.getLoginNavSentMagicLink().help();
+
+        // help is not implemented yet so, we should still be in the SentMagicLink state
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+        Assert.assertEquals("Help is not implemented yet.", mLastToastMessage);
+
+        loginNavController.goBack();
+        Assert.assertTrue(loginNavController.isNavStackEmpty());
+    }
+
+    @Test
+    public void sentMagicLinkInvalidEventsTest() {
+        LoginNavController loginNavController = new LoginNavController(LoginNav.Prologue.class)
+                .setLoginNavHandler(mLoginNavHandler);
+
+        // get a reference to LoginNav Prologue for later use
+        LoginNav.Prologue loginNavPrologue = loginNavController.getLoginNavPrologue();
+
+        // force LoginNav InputEmail state
+        loginNavController.goBack();
+        loginNavController.force(LoginNav.InputEmail.class);
+        // get a reference to LoginNav InputEmail for later use
+        LoginNav.InputEmail loginNavInputEmail = loginNavController.getLoginNavInputEmail();
+
+        // force LoginNav RequestMagicLink state
+        loginNavController.goBack();
+        loginNavController.force(LoginNav.RequestMagicLink.class);
+        // get a reference to LoginNav RequestMagicLink for later use
+        LoginNav.RequestMagicLink loginNavRequestMagicLink = loginNavController.getLoginNavRequestMagicLink();
+
+        // force LoginNav InputSiteAddress state
+        loginNavController.goBack();
+        loginNavController.force(LoginNav.InputSiteAddress.class);
+        // get a reference to LoginNav InputSiteAddress for later use
+        LoginNav.InputSiteAddress loginNavInputSiteAddress = loginNavController.getLoginNavInputSiteAddress();
+
+        // force the state we want to test
+        loginNavController.goBack();
+        loginNavController.force(LoginNav.SentMagicLink.class);
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+
+        // we shouldn't be able to obtain a reference to LoginNav Prologue in this state
+        try {
+            loginNavPrologue = loginNavController.getLoginNavPrologue();
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.Prologue.class.getSimpleName(), re.getMessage());
+        }
+
+        // `doStartLogin` and `doStartSignup` events is now allowed while in this state
+        try {
+            loginNavPrologue.doStartLogin();
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.Prologue.class.getSimpleName(), re.getMessage());
+        }
+        try {
+            loginNavPrologue.doStartSignup();
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.Prologue.class.getSimpleName(), re.getMessage());
+        }
+
+        // we shouldn't be able to obtain a reference to LoginNav InputEmail in this state
+        try {
+            loginNavInputEmail = loginNavController.getLoginNavInputEmail();
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.InputEmail.class.getSimpleName(), re.getMessage());
+        }
+
+        // `gotEmail` event is not allowed while in this state
+        try {
+            loginNavInputEmail.gotEmail("a@b.com");
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.InputEmail.class.getSimpleName(), re.getMessage());
+        }
+
+        // we shouldn't be able to obtain a reference to LoginNav RequestMagicLink in this state
+        try {
+            loginNavRequestMagicLink = loginNavController.getLoginNavRequestMagicLink();
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
+        }
+
+        // `magicLinkRequestSent` event is not allowed while in this state
+        try {
+            loginNavRequestMagicLink.magicLinkRequestSent("a@b.com");
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
+        }
+
+        // we shouldn't be able to obtain a reference to LoginNav InputSiteAddress in this state
+        try {
+            loginNavInputSiteAddress = loginNavController.getLoginNavInputSiteAddress();
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.InputSiteAddress.class.getSimpleName(), re.getMessage());
+        }
+
+        // `gotSiteAddress` event is not allowed while in this state
+        try {
+            loginNavInputSiteAddress.gotSiteAddress("test.wordpress.com");
+        } catch (RuntimeException re) {
+            Assert.assertEquals("Not in state " + LoginNav.InputSiteAddress.class.getSimpleName(), re.getMessage());
+        }
+
+        // we should still be in the RequestMagicLink state
+        loginNavController.ensureState(LoginNav.SentMagicLink.class);
+
+        loginNavController.goBack();
+        Assert.assertTrue(loginNavController.isNavStackEmpty());
+    }
+
+    /////////////////////////////////////////////////
+    ///
     /// INPUT_SITE_ADDRESS nav tests
     ///
     /////////////////////////////////////////////////
@@ -546,9 +711,9 @@ public class LoginLogicTest {
             Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
         }
 
-        // `sendMagicLinkRequest` event is not allowed while in this state
+        // `magicLinkRequestSent` event is not allowed while in this state
         try {
-            loginNavRequestMagicLink.sendMagicLinkRequest("a@b.com");
+            loginNavRequestMagicLink.magicLinkRequestSent("a@b.com");
         } catch (RuntimeException re) {
             Assert.assertEquals("Not in state " + LoginNav.RequestMagicLink.class.getSimpleName(), re.getMessage());
         }
